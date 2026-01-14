@@ -29,6 +29,48 @@ namespace HabitTracker
             DatePicker.SelectedDate = SelectedDate;
             UpdateCurrentUserDisplay();
             LoadDailyHabits();
+            
+            // Sprawdź czy użytkownik ma 0 nawyków i pokaż okno z predefiniowanymi nawykami
+            this.Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Sprawdź czy użytkownik ma 0 nawyków
+            var allHabits = _habitManager.GetAllHabits();
+            if (allHabits.Count == 0)
+            {
+                ShowPredefinedHabitsWindow();
+            }
+        }
+
+        private void ShowPredefinedHabitsWindow()
+        {
+            try
+            {
+                var predefinedHabitsWindow = new PredefinedHabitsWindow(_habitManager)
+                {
+                    Owner = this
+                };
+                
+                if (predefinedHabitsWindow.ShowDialog() == true)
+                {
+                    // Odśwież listę nawyków po dodaniu predefiniowanych
+                    LoadDailyHabits();
+                    UpdateStatus("Dodano wybrane predefiniowane nawyki.");
+                }
+                else
+                {
+                    UpdateStatus("Pominięto wybór predefiniowanych nawyków.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd podczas otwierania okna predefiniowanych nawyków: {ex.Message}\n\nSzczegóły: {ex}", 
+                    "Błąd", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+            }
         }
 
         private void UpdateCurrentUserDisplay()
