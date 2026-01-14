@@ -27,7 +27,21 @@ namespace HabitTracker
             DataContext = this;
             SelectedDate = DateTime.Today;
             DatePicker.SelectedDate = SelectedDate;
+            UpdateCurrentUserDisplay();
             LoadDailyHabits();
+        }
+
+        private void UpdateCurrentUserDisplay()
+        {
+            var currentUser = _habitManager.GetCurrentUser();
+            if (currentUser != null)
+            {
+                CurrentUserTextBlock.Text = $"Zalogowany jako: {currentUser.Username}";
+            }
+            else
+            {
+                CurrentUserTextBlock.Text = "";
+            }
         }
 
         private void DatePicker_SelectedDateChanged(object? sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -376,6 +390,21 @@ namespace HabitTracker
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Czy na pewno chcesz się wylogować?",
+                "Wylogowanie",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                _habitManager.Logout();
+                this.Close();
+            }
         }
     }
 }

@@ -90,7 +90,7 @@ namespace HabitTracker.Services
         public double GetCompletionPercentageThisWeek(Habit habit)
         {
             var today = DateTime.Today;
-            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var startOfWeek = today.AddDays(-((int)today.DayOfWeek - 1));
             var endDate = today;
 
             return GetCompletionPercentage(habit, startOfWeek, endDate);

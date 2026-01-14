@@ -107,8 +107,22 @@
         </Grid.RowDefinitions>
 
         <!-- Nagłówek -->
-        <TextBlock Grid.Row="0" Text="Habit Tracker" FontSize="28" FontWeight="Bold" 
-                   Margin="0,0,0,15" HorizontalAlignment="Center"/>
+        <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Habit Tracker" FontSize="28" FontWeight="Bold" 
+                       HorizontalAlignment="Center"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="CurrentUserTextBlock" Text="" FontSize="14" 
+                           Foreground="Gray" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                <Button x:Name="LogoutButton" Content="Wyloguj" Width="80" Height="30"
+                        Click="LogoutButton_Click"
+                        Background="#F44336" Foreground="White" 
+                        FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
 
         <!-- Panel kontrolny -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">

@@ -20,43 +20,122 @@ namespace HabitTracker.Services
         {
             _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
             _users = _dataService.Load();
-            
-            // Mock-up: używamy pierwszego użytkownika lub tworzymy domyślnego
-            InitializeCurrentUser();
         }
 
         /// <summary>
-        /// Inicjalizuje bieżącego użytkownika (mock-up: pierwszy użytkownik)
+        /// Loguje użytkownika na podstawie nazwy użytkownika i hasła
         /// </summary>
-        private void InitializeCurrentUser()
+        /// <param name="username">Nazwa użytkownika</param>
+        /// <param name="password">Hasło</param>
+        /// <returns>True, jeśli logowanie się powiodło</returns>
+        public bool Login(string username, string password)
         {
-            if (_users.Count == 0)
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                return false;
+
+            var user = _users.FirstOrDefault(u => 
+                u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) && 
+                u.Password == password);
+
+            if (user != null)
             {
-                // Tworzymy domyślnego użytkownika, jeśli nie ma żadnego
-                _currentUser = new User
-                {
-                    Id = 1,
-                    Username = "DefaultUser",
-                    Habits = new List<Habit>()
-                };
-                _users.Add(_currentUser);
-                SaveData();
-            }
-            else
-            {
-                _currentUser = _users[0];
+                _currentUser = user;
+                InitializeIds();
+                return true;
             }
 
-            // Ustawiamy następne ID dla nawyków i wpisów
+            return false;
+        }
+
+        /// <summary>
+        /// Rejestruje nowego użytkownika
+        /// </summary>
+        /// <param name="username">Nazwa użytkownika</param>
+        /// <param name="password">Hasło</param>
+        /// <returns>True, jeśli rejestracja się powiodła</returns>
+        public bool Register(string username, string password)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                return false;
+
+            // Sprawdź, czy użytkownik już istnieje
+            if (_users.Any(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)))
+                return false;
+
+            // Znajdź następne dostępne ID użytkownika
+            var nextUserId = _users.Count > 0 ? _users.Max(u => u.Id) + 1 : 1;
+
+            var newUser = new User
+            {
+                Id = nextUserId,
+                Username = username,
+                Password = password,
+                Habits = new List<Habit>()
+            };
+
+            _users.Add(newUser);
+            SaveData();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Wylogowuje bieżącego użytkownika
+        /// </summary>
+        public void Logout()
+        {
+            _currentUser = null;
+            _nextHabitId = 1;
+            _nextEntryId = 1;
+        }
+
+        /// <summary>
+        /// Pobiera bieżącego zalogowanego użytkownika
+        /// </summary>
+        public User? GetCurrentUser()
+        {
+            return _currentUser;
+        }
+
+        /// <summary>
+        /// Sprawdza, czy użytkownik jest zalogowany
+        /// </summary>
+        public bool IsLoggedIn()
+        {
+            return _currentUser != null;
+        }
+
+        /// <summary>
+        /// Inicjalizuje następne ID dla nawyków i wpisów na podstawie bieżącego użytkownika
+        /// </summary>
+        private void InitializeIds()
+        {
+            if (_currentUser == null)
+            {
+                _nextHabitId = 1;
+                _nextEntryId = 1;
+                return;
+            }
+
+            // Ustawiamy następne ID dla nawyków
             if (_currentUser.Habits.Any())
             {
                 _nextHabitId = _currentUser.Habits.Max(h => h.Id) + 1;
             }
+            else
+            {
+                _nextHabitId = 1;
+            }
 
+            // Ustawiamy następne ID dla wpisów
             var allEntries = _currentUser.Habits.SelectMany(h => h.History).ToList();
             if (allEntries.Any())
             {
                 _nextEntryId = allEntries.Max(e => e.Id) + 1;
+            }
+            else
+            {
+                _nextEntryId = 1;
             }
         }
 

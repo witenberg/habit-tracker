@@ -25,9 +25,8 @@ namespace HabitTracker
                 var dataService = new JsonDataService();
                 HabitManager = new HabitManager(dataService);
 
-                // Utwórz i pokaż główne okno
-                var mainWindow = new MainWindow(HabitManager);
-                mainWindow.Show();
+                // Pokaż okno logowania
+                ShowLoginWindow();
             }
             catch (Exception ex)
             {
@@ -35,6 +34,53 @@ namespace HabitTracker
                     "Błąd krytyczny", 
                     MessageBoxButton.OK, 
                     MessageBoxImage.Error);
+                Shutdown();
+            }
+        }
+
+        private void ShowLoginWindow()
+        {
+            var loginWindow = new LoginWindow(HabitManager);
+            if (loginWindow.ShowDialog() == true && loginWindow.IsLoggedIn)
+            {
+                try
+                {
+                    // Po pomyślnym zalogowaniu, pokaż główne okno
+                    var mainWindow = new MainWindow(HabitManager);
+                    
+                    // Ustaw MainWindow jako główne okno aplikacji, aby aplikacja nie zamykała się automatycznie
+                    MainWindow = mainWindow;
+                    
+                    // Obsłuż zamknięcie głównego okna
+                    mainWindow.Closed += (s, e) =>
+                    {
+                        // Jeśli użytkownik jest wylogowany, pokaż okno logowania ponownie
+                        if (!HabitManager.IsLoggedIn())
+                        {
+                            MainWindow = null; // Wyczyść główne okno przed pokazaniem okna logowania
+                            ShowLoginWindow();
+                        }
+                        else
+                        {
+                            // Jeśli użytkownik jest nadal zalogowany, zamknij aplikację
+                            Shutdown();
+                        }
+                    };
+                    
+                    mainWindow.Show();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Błąd podczas tworzenia głównego okna: {ex.Message}\n\n{ex}", 
+                        "Błąd", 
+                        MessageBoxButton.OK, 
+                        MessageBoxImage.Error);
+                    Shutdown();
+                }
+            }
+            else
+            {
+                // Użytkownik anulował logowanie - zamknij aplikację
                 Shutdown();
             }
         }
