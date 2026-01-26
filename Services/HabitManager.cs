@@ -147,11 +147,14 @@ namespace HabitTracker.Services
         /// <param name="isBoolean">True dla BooleanHabit, False dla QuantitativeHabit</param>
         /// <param name="targetValue">Wartość docelowa (tylko dla QuantitativeHabit)</param>
         /// <param name="unit">Jednostka (tylko dla QuantitativeHabit)</param>
+        /// <param name="createdDate">Data utworzenia nawyku (domyślnie DateTime.Now)</param>
         /// <returns>Utworzony nawyk</returns>
-        public Habit CreateHabit(string name, string description, bool isBoolean, double targetValue = 0, string unit = "")
+        public Habit CreateHabit(string name, string description, bool isBoolean, double targetValue = 0, string unit = "", DateTime? createdDate = null)
         {
             if (_currentUser == null)
                 throw new InvalidOperationException("Brak zalogowanego użytkownika");
+
+            var habitCreatedDate = createdDate ?? DateTime.Now;
 
             Habit habit;
 
@@ -162,7 +165,7 @@ namespace HabitTracker.Services
                     Id = _nextHabitId++,
                     Name = name,
                     Description = description,
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = habitCreatedDate,
                     History = new List<HabitEntry>()
                 };
             }
@@ -173,7 +176,7 @@ namespace HabitTracker.Services
                     Id = _nextHabitId++,
                     Name = name,
                     Description = description,
-                    CreatedDate = DateTime.Now,
+                    CreatedDate = habitCreatedDate,
                     History = new List<HabitEntry>(),
                     TargetValue = targetValue,
                     Unit = unit

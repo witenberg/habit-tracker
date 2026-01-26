@@ -142,14 +142,14 @@ namespace HabitTracker
         {
             try
             {
-                var addHabitWindow = new AddHabitWindow(_habitManager)
+                var addHabitWindow = new AddHabitWindow(_habitManager, SelectedDate)
                 {
                     Owner = this
                 };
                 if (addHabitWindow.ShowDialog() == true)
                 {
                     LoadDailyHabits();
-                    UpdateStatus("Nawyk został dodany pomyślnie.");
+                    UpdateStatus($"Nawyk został dodany pomyślnie z datą {SelectedDate:dd.MM.yyyy}.");
                 }
             }
             catch (Exception ex)

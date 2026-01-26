@@ -10,13 +10,15 @@ namespace HabitTracker
     public partial class AddHabitWindow : Window
     {
         private readonly HabitManager _habitManager;
+        private readonly DateTime _createdDate;
 
-        public AddHabitWindow(HabitManager habitManager)
+        public AddHabitWindow(HabitManager habitManager, DateTime createdDate)
         {
             try
             {
                 InitializeComponent();
                 _habitManager = habitManager ?? throw new ArgumentNullException(nameof(habitManager));
+                _createdDate = createdDate;
             }
             catch (Exception ex)
             {
@@ -63,8 +65,8 @@ namespace HabitTracker
                             return;
                         }
 
-                        // Utwórz nawyk Boolean
-                        _habitManager.CreateHabit(name, description, isBoolean: true);
+                        // Utwórz nawyk Boolean z wybraną datą
+                        _habitManager.CreateHabit(name, description, isBoolean: true, createdDate: _createdDate);
                     }
                     else // Quantitative
                     {
@@ -87,8 +89,8 @@ namespace HabitTracker
                             return;
                         }
 
-                        // Utwórz nawyk ilościowy
-                        _habitManager.CreateHabit(name, description, isBoolean: false, targetValue, unit);
+                        // Utwórz nawyk ilościowy z wybraną datą
+                        _habitManager.CreateHabit(name, description, isBoolean: false, targetValue, unit, _createdDate);
                     }
 
                     DialogResult = true;
