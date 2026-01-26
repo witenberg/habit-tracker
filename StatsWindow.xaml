@@ -3,10 +3,49 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:oxy="http://oxyplot.org/wpf"
         mc:Ignorable="d"
-        Title="Statystyki nawyku" Height="500" Width="600"
+        Title="Statystyki nawyku" Height="700" Width="900"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="CanResize">
+    <Window.Resources>
+        <!-- Styl dla zakładek -->
+        <Style x:Key="TabItemStyle" TargetType="TabItem">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1,1,1,0"/>
+            <Setter Property="Margin" Value="2,0,0,0"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="BorderBrush" Value="#2196F3"/>
+                    <Setter Property="BorderThickness" Value="1,3,1,0"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Styl dla sekcji statystyk -->
+        <Style x:Key="StatsSectionStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <!-- Styl dla tytułów sekcji -->
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,28 +55,158 @@
         </Grid.RowDefinitions>
 
         <!-- Nagłówek -->
-        <TextBlock Grid.Row="0" x:Name="HabitNameTextBlock" 
-                   Text="Statystyki" FontSize="24" FontWeight="Bold" 
-                   Margin="0,0,0,20" HorizontalAlignment="Center"/>
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock x:Name="HabitNameTextBlock" 
+                       Text="Statystyki" FontSize="28" FontWeight="Bold" 
+                       HorizontalAlignment="Center" Foreground="#2196F3"/>
+            <TextBlock x:Name="HabitDescriptionTextBlock" 
+                       Text="" FontSize="12" Foreground="Gray" 
+                       TextWrapping="Wrap" Margin="0,5,0,0" 
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
 
-        <!-- Opis nawyku -->
-        <TextBlock Grid.Row="1" x:Name="HabitDescriptionTextBlock" 
-                   Text="" FontSize="12" Foreground="Gray" 
-                   TextWrapping="Wrap" Margin="0,0,0,20" 
-                   HorizontalAlignment="Center"/>
-
-        <!-- Statystyki -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-            <StackPanel x:Name="StatsPanel">
-                <!-- Statystyki będą dodawane dynamicznie w code-behind -->
+        <!-- Statystyki niezależne od okresu -->
+        <Border Grid.Row="1" Style="{StaticResource StatsSectionStyle}">
+            <StackPanel>
+                <TextBlock Text="📊 Statystyki ogólne" Style="{StaticResource SectionTitleStyle}"/>
+                <StackPanel x:Name="GeneralStatsPanel" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!-- Statystyki będą dodawane dynamicznie -->
+                </StackPanel>
             </StackPanel>
-        </ScrollViewer>
+        </Border>
+
+        <!-- Zakładki z okresami -->
+        <TabControl Grid.Row="2" x:Name="PeriodTabControl" SelectionChanged="PeriodTabControl_SelectionChanged">
+            <!-- Zakładka: Tydzień -->
+            <TabItem Header="Tydzień" Style="{StaticResource TabItemStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <!-- Statystyki dla tygodnia -->
+                        <Border Style="{StaticResource StatsSectionStyle}">
+                            <StackPanel x:Name="WeekStatsPanel">
+                                <TextBlock Text="📈 Statystyki tygodniowe" Style="{StaticResource SectionTitleStyle}"/>
+                                <!-- Statystyki będą dodawane dynamicznie -->
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Wykresy dla tygodnia -->
+                        <Border Style="{StaticResource StatsSectionStyle}">
+                            <StackPanel>
+                                <TextBlock Text="📊 Wykresy" Style="{StaticResource SectionTitleStyle}"/>
+                                
+                                <!-- Wykres główny (liniowy dla Quantitative, kołowy dla Boolean) -->
+                                <oxy:PlotView x:Name="WeekMainChart" Height="300" Margin="0,0,0,15"/>
+                                
+                                <!-- Kalendarz aktywności (ukryty dla tygodnia) -->
+                                <StackPanel x:Name="WeekHeatmapPanel" Visibility="Collapsed">
+                                    <TextBlock Text="Kalendarz aktywności" FontWeight="SemiBold" Margin="0,10,0,5"/>
+                                    <oxy:PlotView x:Name="WeekHeatmap" Height="150" Margin="0,0,0,15"/>
+                                </StackPanel>
+                                
+                                <!-- Wykres serii -->
+                                <TextBlock Text="Serie (streaki)" FontWeight="SemiBold" Margin="0,10,0,5"/>
+                                <oxy:PlotView x:Name="WeekStreakChart" Height="200"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Zakładka: Miesiąc -->
+            <TabItem Header="Miesiąc" Style="{StaticResource TabItemStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <!-- Statystyki dla miesiąca -->
+                        <Border Style="{StaticResource StatsSectionStyle}">
+                            <StackPanel x:Name="MonthStatsPanel">
+                                <TextBlock Text="📈 Statystyki miesięczne" Style="{StaticResource SectionTitleStyle}"/>
+                                <!-- Statystyki będą dodawane dynamicznie -->
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Wykresy dla miesiąca -->
+                        <Border Style="{StaticResource StatsSectionStyle}">
+                            <StackPanel>
+                                <TextBlock Text="📊 Wykresy" Style="{StaticResource SectionTitleStyle}"/>
+                                
+                                <!-- Wykres główny (liniowy dla Quantitative, kołowy dla Boolean) -->
+                                <oxy:PlotView x:Name="MonthMainChart" Height="300" Margin="0,0,0,15"/>
+                                
+                                <!-- Kalendarz aktywności -->
+                                <TextBlock Text="Kalendarz aktywności" FontWeight="SemiBold" Margin="0,10,0,5"/>
+                                <oxy:PlotView x:Name="MonthHeatmap" Height="280" Margin="0,0,0,15"/>
+                                
+                                <!-- Wykres serii -->
+                                <TextBlock Text="Serie (streaki)" FontWeight="SemiBold" Margin="0,10,0,5"/>
+                                <oxy:PlotView x:Name="MonthStreakChart" Height="200"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Zakładka: Rok -->
+            <TabItem Header="Rok" Style="{StaticResource TabItemStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <!-- Statystyki dla roku -->
+                        <Border Style="{StaticResource StatsSectionStyle}">
+                            <StackPanel x:Name="YearStatsPanel">
+                                <TextBlock Text="📈 Statystyki roczne" Style="{StaticResource SectionTitleStyle}"/>
+                                <!-- Statystyki będą dodawane dynamicznie -->
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Wykresy dla roku -->
+                        <Border Style="{StaticResource StatsSectionStyle}">
+                            <StackPanel>
+                                <TextBlock Text="📊 Wykresy" Style="{StaticResource SectionTitleStyle}"/>
+                                
+                                <!-- Wykres główny (liniowy dla Quantitative, kołowy dla Boolean) -->
+                                <oxy:PlotView x:Name="YearMainChart" Height="300" Margin="0,0,0,15"/>
+                                
+                                <!-- Kalendarz aktywności -->
+                                <TextBlock Text="Kalendarz aktywności (rok)" FontWeight="SemiBold" Margin="0,10,0,5"/>
+                                <oxy:PlotView x:Name="YearHeatmap" Height="280" Margin="0,0,0,15"/>
+                                
+                                <!-- Wykres serii -->
+                                <TextBlock Text="Serie (streaki)" FontWeight="SemiBold" Margin="0,10,0,5"/>
+                                <oxy:PlotView x:Name="YearStreakChart" Height="200"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
 
         <!-- Przycisk zamknięcia -->
-        <Button Grid.Row="3" Content="Zamknij" Width="100" Height="35" 
+        <Button Grid.Row="3" Content="Zamknij" Width="120" Height="40" 
                 Click="CloseButton_Click" 
-                HorizontalAlignment="Center" Margin="0,20,0,0"
+                HorizontalAlignment="Center" Margin="0,15,0,0"
                 Background="#2196F3" Foreground="White"
-                FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                FontSize="14" FontWeight="Bold" BorderThickness="0" 
+                Cursor="Hand">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="#2196F3"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" 
+                                        CornerRadius="5" 
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#1976D2"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
     </Grid>
 </Window>

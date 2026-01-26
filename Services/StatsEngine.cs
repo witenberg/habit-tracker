@@ -188,5 +188,151 @@ namespace HabitTracker.Services
 
             return longestStreak;
         }
+
+        /// <summary>
+        /// Pobiera wszystkie serie (streaki) w historii nawyku
+        /// </summary>
+        /// <param name="habit">Nawyk do analizy</param>
+        /// <returns>Lista (Data rozpoczęcia, Długość serii)</returns>
+        public List<(DateTime StartDate, int Length)> GetAllStreaks(Habit habit)
+        {
+            var streaks = new List<(DateTime StartDate, int Length)>();
+            
+            if (habit?.History == null || habit.History.Count == 0)
+                return streaks;
+
+            var sortedEntries = habit.History
+                .Where(e => e.IsTargetMet)
+                .OrderBy(e => e.Date)
+                .Select(e => e.Date.Date)
+                .Distinct()
+                .ToList();
+
+            if (sortedEntries.Count == 0)
+                return streaks;
+
+            DateTime streakStart = sortedEntries[0];
+            int currentLength = 1;
+
+            for (int i = 1; i < sortedEntries.Count; i++)
+            {
+                var daysDiff = (sortedEntries[i] - sortedEntries[i - 1]).Days;
+                
+                if (daysDiff == 1)
+                {
+                    currentLength++;
+                }
+                else
+                {
+                    streaks.Add((streakStart, currentLength));
+                    streakStart = sortedEntries[i];
+                    currentLength = 1;
+                }
+            }
+
+            streaks.Add((streakStart, currentLength));
+            return streaks;
+        }
+
+        /// <summary>
+        /// Pobiera dane dla wykresu w zadanym okresie
+        /// </summary>
+        /// <param name="habit">Nawyk do analizy</param>
+        /// <param name="startDate">Data początkowa</param>
+        /// <param name="endDate">Data końcowa</param>
+        /// <returns>Lista (Data, Wartość, Czy osiągnięto cel)</returns>
+        public List<(DateTime Date, double Value, bool IsTargetMet)> GetChartData(Habit habit, DateTime startDate, DateTime endDate)
+        {
+            if (habit == null)
+                throw new ArgumentNullException(nameof(habit));
+
+            var result = new List<(DateTime Date, double Value, bool IsTargetMet)>();
+            
+            for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
+            {
+                var entry = habit.History.FirstOrDefault(e => e.Date.Date == date);
+                if (entry != null)
+                {
+                    result.Add((date, entry.Value, entry.IsTargetMet));
+                }
+                else
+                {
+                    result.Add((date, 0, false));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Pobiera dane agregowane tygodniowo
+        /// </summary>
+        /// <param name="habit">Nawyk do analizy</param>
+        /// <param name="startDate">Data początkowa</param>
+        /// <param name="endDate">Data końcowa</param>
+        /// <returns>Lista (Data początku tygodnia, % wykonania)</returns>
+        public List<(DateTime WeekStart, double CompletionPercentage)> GetWeeklyCompletionData(Habit habit, DateTime startDate, DateTime endDate)
+        {
+            if (habit == null)
+                throw new ArgumentNullException(nameof(habit));
+
+            var result = new List<(DateTime WeekStart, double CompletionPercentage)>();
+            var currentDate = startDate.Date;
+
+            while (currentDate <= endDate.Date)
+            {
+                var weekEnd = currentDate.AddDays(6);
+                if (weekEnd > endDate.Date)
+                    weekEnd = endDate.Date;
+
+                var percentage = GetCompletionPercentage(habit, currentDate, weekEnd);
+                result.Add((currentDate, percentage));
+
+                currentDate = currentDate.AddDays(7);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Pobiera statystyki wykonania dla każdego dnia tygodnia
+        /// </summary>
+        /// <param name="habit">Nawyk do analizy</param>
+        /// <param name="startDate">Data początkowa</param>
+        /// <param name="endDate">Data końcowa</param>
+        /// <returns>Słownik (Dzień tygodnia, % wykonania)</returns>
+        public Dictionary<DayOfWeek, double> GetCompletionByDayOfWeek(Habit habit, DateTime startDate, DateTime endDate)
+        {
+            if (habit == null)
+                throw new ArgumentNullException(nameof(habit));
+
+            var result = new Dictionary<DayOfWeek, double>();
+            
+            for (int i = 0; i <= 6; i++)
+            {
+                var dayOfWeek = (DayOfWeek)i;
+                var daysInPeriod = new List<DateTime>();
+                
+                for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
+                {
+                    if (date.DayOfWeek == dayOfWeek)
+                        daysInPeriod.Add(date);
+                }
+
+                if (daysInPeriod.Count > 0)
+                {
+                    int completedDays = daysInPeriod.Count(date => 
+                        habit.History.Any(e => e.Date.Date == date && e.IsTargetMet));
+                    
+                    result[dayOfWeek] = (double)completedDays / daysInPeriod.Count * 100.0;
+                }
+                else
+                {
+                    result[dayOfWeek] = 0;
+                }
+            }
+
+            return result;
+        }
     }
 }
