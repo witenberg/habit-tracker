@@ -32,19 +32,94 @@ namespace HabitTracker
             InitializeComponent();
             _habit = habit ?? throw new ArgumentNullException(nameof(habit));
             _statsEngine = new StatsEngine();
-            
+
+            InitializeDatePickers();
+
+            var hoverController = new OxyPlot.PlotController();
+            hoverController.UnbindAll();
+            hoverController.BindMouseEnter(OxyPlot.PlotCommands.HoverSnapTrack); // Pokaż dymek po najechaniu
+                                                                                 // hoverController.BindMouseLeave(OxyPlot.PlotCommands.HoverSnapTrack); // Ukryj po zjechaniu
+
+            // 2. Przypisujemy ten kontroler do Twoich wykresów w oknie
+            // (Musisz to zrobić dla każdego wykresu, który ma mieć dymki)
+            MonthHeatmap.Controller = hoverController;
+            YearHeatmap.Controller = hoverController;
+
             LoadGeneralStats();
-            
-            // Ustaw domyślną zakładkę na "Miesiąc"
+
             PeriodTabControl.SelectedIndex = 1;
+        }
+
+        private void InitializeDatePickers()
+        {
+            // Wypełnij lata 
+            var currentYear = DateTime.Today.Year;
+            var years = Enumerable.Range(currentYear - 4, 5).ToList();
+            YearComboBox.ItemsSource = years;
+            YearComboBox.SelectedItem = currentYear;
+
+            // Wypełnij miesiące
+            var months = new List<string> {
+                "Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec",
+                "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"
+            };
+            MonthComboBox.ItemsSource = months;
+            MonthComboBox.SelectedIndex = DateTime.Today.Month - 1; // -1 bo indeksy są od 0
+
+            YearOnlyComboBox.ItemsSource = years;
+            YearOnlyComboBox.SelectedItem = currentYear;
+        }
+
+        private void OnDateFilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Sprawdź oba ComboBoxy z latami - null check
+            if (YearComboBox == null || YearComboBox.SelectedItem == null ||
+                YearOnlyComboBox == null || YearOnlyComboBox.SelectedItem == null ||
+                MonthComboBox == null || MonthComboBox.SelectedIndex == -1)
+                return;
+
+            // Sprawdź zakładkę
+            if (PeriodTabControl.SelectedIndex == 1) // Zakładka "Miesiąc"
+            {
+                RefreshMonthView();
+            }
+            else if (PeriodTabControl.SelectedIndex == 2) // Zakładka "Rok"
+            {
+                RefreshYearView();
+            }
+        }
+
+        private void RefreshYearView()
+        {
+            int selectedYear = (int)YearOnlyComboBox.SelectedItem;
+
+            // zakres: od 1 stycznia do 31 grudnia wybranego roku
+            DateTime startDate = new DateTime(selectedYear, 1, 1);
+            DateTime endDate = new DateTime(selectedYear, 12, 31);
+
+            LoadPeriodStats(startDate, endDate, YearStatsPanel);
+            LoadCharts(startDate, endDate, YearMainChart, YearHeatmap, YearStreakChart, showHeatmap: true);
+        }
+        private void RefreshMonthView()
+        {
+            int selectedYear = (int)YearComboBox.SelectedItem;
+            int selectedMonth = MonthComboBox.SelectedIndex + 1; // +1 bo indeksy od 0
+
+            // Obliczenie pierwszy i ostatni dzień wybranego miesiąca
+            DateTime startDate = new DateTime(selectedYear, selectedMonth, 1);
+            DateTime endDate = startDate.AddMonths(1).AddDays(-1);
+
+            // Wywołaj metody ładujące z KONKRETNYMI datami
+            LoadPeriodStats(startDate, endDate, MonthStatsPanel);
+            LoadCharts(startDate, endDate, MonthMainChart, MonthHeatmap, MonthStreakChart, showHeatmap: true);
         }
 
         private void LoadGeneralStats()
         {
             // Ustaw nazwę i opis nawyku
             HabitNameTextBlock.Text = _habit.Name;
-            HabitDescriptionTextBlock.Text = string.IsNullOrWhiteSpace(_habit.Description) 
-                ? "(Brak opisu)" 
+            HabitDescriptionTextBlock.Text = string.IsNullOrWhiteSpace(_habit.Description)
+                ? "(Brak opisu)"
                 : _habit.Description;
 
             // Wyczyść panel statystyk ogólnych
@@ -85,7 +160,7 @@ namespace HabitTracker
                 Text = value,
                 FontSize = 18,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2ECC71")),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 5, 0, 0)
             };
@@ -100,37 +175,41 @@ namespace HabitTracker
             if (PeriodTabControl.SelectedIndex == -1)
                 return;
 
+            DateTime today = DateTime.Today;
+
             switch (PeriodTabControl.SelectedIndex)
             {
-                case 0: // Tydzień
-                    LoadPeriodStats(WEEK_DAYS, WeekStatsPanel);
-                    LoadCharts(WEEK_DAYS, WeekMainChart, WeekHeatmap, WeekStreakChart, showHeatmap: false);
+                case 0: // Tydzień (Ostatnie 7 dni)
+                    var weekStart = today.AddDays(-6);
+                    LoadPeriodStats(weekStart, today, WeekStatsPanel);
+                    LoadCharts(weekStart, today, WeekMainChart, WeekHeatmap, WeekStreakChart, showHeatmap: false);
                     break;
-                case 1: // Miesiąc
-                    LoadPeriodStats(MONTH_DAYS, MonthStatsPanel);
-                    LoadCharts(MONTH_DAYS, MonthMainChart, MonthHeatmap, MonthStreakChart, showHeatmap: true);
+
+                case 1: // Miesiąc (Korzystamy z tego, co wybrano w ComboBoxach)
+                    RefreshMonthView();
                     break;
                 case 2: // Rok
-                    LoadPeriodStats(YEAR_DAYS, YearStatsPanel);
-                    LoadCharts(YEAR_DAYS, YearMainChart, YearHeatmap, YearStreakChart, showHeatmap: true);
+                        // Zamiast liczyć daty ręcznie, po prostu wywołujemy odświeżenie
+                        // na podstawie tego, co jest w ComboBoxie
+                    if (YearOnlyComboBox != null && YearOnlyComboBox.SelectedItem != null)
+                    {
+                        RefreshYearView();
+                    }
                     break;
             }
         }
 
-        private void LoadPeriodStats(int days, StackPanel panel)
+        private void LoadPeriodStats(DateTime startDate, DateTime endDate, StackPanel panel)
         {
             // Usuń stare statystyki (zachowaj tytuł)
             while (panel.Children.Count > 1)
                 panel.Children.RemoveAt(1);
 
-            var endDate = DateTime.Today;
-            var startDate = endDate.AddDays(-(days - 1));
+            int totalDays = (endDate - startDate).Days + 1;
 
-            // Procent wykonania w okresie
             double percentage = _statsEngine.GetCompletionPercentage(_habit, startDate, endDate);
             AddPeriodStatistic(panel, "Procent wykonania", $"{percentage:F1}%");
 
-            // Dla nawyków ilościowych - średnia wartość
             if (_habit is QuantitativeHabit quantitativeHabit)
             {
                 var avgValue = _statsEngine.GetAverageValue(_habit, startDate, endDate);
@@ -139,17 +218,15 @@ namespace HabitTracker
                     AddPeriodStatistic(panel, "Średnia wartość", $"{avgValue.Value:F2} {quantitativeHabit.Unit}");
                 }
 
-                // Liczba dni, gdy osiągnięto cel
-                var completedDays = _habit.History.Count(e => 
+                var completedDays = _habit.History.Count(e =>
                     e.Date.Date >= startDate && e.Date.Date <= endDate && e.IsTargetMet);
-                AddPeriodStatistic(panel, "Dni z osiągniętym celem", $"{completedDays} / {days}");
+                AddPeriodStatistic(panel, "Dni z osiągniętym celem", $"{completedDays} / {totalDays}");
             }
             else
             {
-                // Dla nawyków boolean - liczba wykonanych dni
-                var completedDays = _habit.History.Count(e => 
+                var completedDays = _habit.History.Count(e =>
                     e.Date.Date >= startDate && e.Date.Date <= endDate && e.IsTargetMet);
-                AddPeriodStatistic(panel, "Wykonane dni", $"{completedDays} / {days}");
+                AddPeriodStatistic(panel, "Wykonane dni", $"{completedDays} / {totalDays}");
             }
         }
 
@@ -173,7 +250,7 @@ namespace HabitTracker
             {
                 Text = value,
                 FontSize = 14,
-                Foreground = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2ECC71")),
                 FontWeight = FontWeights.Bold,
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -183,33 +260,28 @@ namespace HabitTracker
             panel.Children.Add(stackPanel);
         }
 
-        private void LoadCharts(int days, 
-            OxyPlot.Wpf.PlotView mainChart, 
+        private void LoadCharts(DateTime startDate, DateTime endDate,
+            OxyPlot.Wpf.PlotView mainChart,
             OxyPlot.Wpf.PlotView heatmapChart,
             OxyPlot.Wpf.PlotView streakChart,
             bool showHeatmap)
         {
-            var endDate = DateTime.Today;
-            var startDate = endDate.AddDays(-(days - 1));
+            int totalDays = (endDate - startDate).Days + 1;
 
             if (_habit is QuantitativeHabit quantitativeHabit)
             {
-                // Dla nawyków ilościowych - wykres liniowy z celem
                 mainChart.Model = CreateQuantitativeLineChart(startDate, endDate, quantitativeHabit);
             }
             else
             {
-                // Dla nawyków boolean - wykres kołowy
                 mainChart.Model = CreateBooleanPieChart(startDate, endDate);
             }
 
-            // Kalendarz aktywności (tylko dla miesiąca i roku)
             if (showHeatmap)
             {
-                heatmapChart.Model = CreateHeatmapChart(startDate, endDate, days);
+                heatmapChart.Model = CreateHeatmapChart(startDate, endDate, totalDays);
             }
 
-            // Wykres serii
             streakChart.Model = CreateStreakChart();
         }
 
@@ -217,8 +289,8 @@ namespace HabitTracker
 
         private PlotModel CreateQuantitativeLineChart(DateTime startDate, DateTime endDate, QuantitativeHabit habit)
         {
-            var model = new PlotModel 
-            { 
+            var model = new PlotModel
+            {
                 Title = "Wartości w czasie",
                 TitleFontSize = 16,
                 Background = OxyColors.White
@@ -298,15 +370,15 @@ namespace HabitTracker
 
         private PlotModel CreateBooleanPieChart(DateTime startDate, DateTime endDate)
         {
-            var model = new PlotModel 
-            { 
+            var model = new PlotModel
+            {
                 Title = "Podsumowanie wykonania",
                 TitleFontSize = 16,
                 Background = OxyColors.White
             };
 
             var totalDays = (endDate - startDate).Days + 1;
-            var completedDays = _habit.History.Count(e => 
+            var completedDays = _habit.History.Count(e =>
                 e.Date.Date >= startDate && e.Date.Date <= endDate && e.IsTargetMet);
             var notCompletedDays = totalDays - completedDays;
 
@@ -343,174 +415,196 @@ namespace HabitTracker
 
         // ============= WYKRESY UNIWERSALNE =============
 
-        private PlotModel CreateHeatmapChart(DateTime startDate, DateTime endDate, int periodDays)
+        private PlotModel CreateHeatmapChart(DateTime startDate, DateTime endDate, int totalDays)
         {
-            var model = new PlotModel 
-            { 
-                Title = "Kalendarz aktywności",
-                TitleFontSize = 16,
+            var model = new PlotModel
+            {
+                Title = totalDays > 40 ? "Kalendarz aktywności (Rok)" : "Kalendarz aktywności",
+                TitleFontSize = 15,
+                TitleFontWeight = OxyPlot.FontWeights.Bold,
                 Background = OxyColors.White,
-                Padding = new OxyThickness(60, 10, 80, 40)
+                PlotAreaBorderThickness = new OxyThickness(0)
+            };
+
+            // Oś Y - Dni tygodnia
+            var dayAxis = new CategoryAxis
+            {
+                Position = AxisPosition.Left,
+                ItemsSource = new[] { "Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd" },
+                TickStyle = TickStyle.None,
+                AxislineStyle = LineStyle.None,
+                IsTickCentered = true,
+                GapWidth = 0
+            };
+            model.Axes.Add(dayAxis);
+
+            // Oś X - Tygodnie
+            var weekAxis = new CategoryAxis
+            {
+                Position = AxisPosition.Bottom,
+                TickStyle = TickStyle.None,
+                AxislineStyle = LineStyle.None,
+                IsTickCentered = true,
+                GapWidth = 0
+            };
+            model.Axes.Add(weekAxis);
+
+            // Seria Prostokątów
+            var rectangleSeries = new RectangleBarSeries
+            {
+                StrokeColor = OxyColors.White, // Biała siatka
+                StrokeThickness = 2,
+                LabelFormatString = null,
+                TrackerFormatString = "{Title}"
             };
 
             var chartData = _statsEngine.GetChartData(_habit, startDate, endDate);
 
-            // Przygotuj dane dla heatmapy
-            var heatmapData = new List<(int Week, int Day, double Intensity)>();
-            
-            int weekIndex = 0;
+            Func<DateTime, string> getTooltipText = (date) =>
+                {
+                    if (totalDays <= 40) // Widok Miesięczny
+                    {
+                        return $"{date:dddd, dd} ({date:MMMM})";
+                    }
+                    else // Widok Roczny
+                    {
+                        return $"{date:dd.MM.yyyy}";
+                    }
+                };
+
             DateTime currentWeekStart = startDate;
+            int weekIndex = 0;
+            int lastMonth = -1;
 
             while (currentWeekStart <= endDate)
             {
+                // --- Etykiety ---
+                DateTime middleOfWeek = currentWeekStart.AddDays(3);
+                string label = "";
+
+                if (totalDays > 40) // Widok roczny
+                {
+                    if (middleOfWeek.Month != lastMonth)
+                    {
+                        label = middleOfWeek.ToString("MMM");
+                        lastMonth = middleOfWeek.Month;
+                    }
+                }
+                else // Widok miesięczny
+                {
+                    label = (weekIndex + 1).ToString();
+                }
+                weekAxis.Labels.Add(label);
+                // ----------------
+
                 for (int dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++)
                 {
                     var currentDate = currentWeekStart.AddDays(dayOfWeek);
-                    if (currentDate > endDate)
-                        break;
+                    OxyColor fillColor = OxyColor.Parse("#EBEDF0");
 
-                    var entry = chartData.FirstOrDefault(d => d.Date.Date == currentDate.Date);
-                    double intensity = 0;
-
-                    if (_habit.History.Any(e => e.Date.Date == currentDate.Date))
+                    if (currentDate <= endDate)
                     {
-                        if (_habit is QuantitativeHabit qHabit)
+                        var entry = chartData.FirstOrDefault(d => d.Date.Date == currentDate.Date);
+
+                        if (_habit.History.Any(e => e.Date.Date == currentDate.Date))
                         {
-                            // Dla Quantitative: intensywność = % wartości docelowej
-                            intensity = entry.Value / qHabit.TargetValue * 100.0;
-                            intensity = Math.Min(intensity, 100); // Maksymalnie 100%
-                        }
-                        else
-                        {
-                            // Dla Boolean: 100 jeśli wykonane, 0 jeśli nie
-                            intensity = entry.IsTargetMet ? 100 : 0;
+                            double intensity = 0;
+                            if (_habit is QuantitativeHabit qHabit)
+                                intensity = (entry.Value / qHabit.TargetValue);
+                            else
+                                intensity = entry.IsTargetMet ? 1.0 : 0.0;
+
+                            if (intensity > 1) intensity = 1;
+
+                            if (intensity <= 0) fillColor = OxyColor.Parse("#EBEDF0");
+                            else if (intensity < 0.4) fillColor = OxyColor.Parse("#9BE9A8");
+                            else if (intensity < 0.7) fillColor = OxyColor.Parse("#40C463");
+                            else fillColor = OxyColor.Parse("#039632");
                         }
                     }
-
-                    heatmapData.Add((weekIndex, dayOfWeek, intensity));
+                    rectangleSeries.Items.Add(new RectangleBarItem
+                    {
+                        X0 = weekIndex - 0.5,
+                        X1 = weekIndex + 0.5,
+                        Y0 = dayOfWeek - 0.5,
+                        Y1 = dayOfWeek + 0.5,
+                        Color = fillColor,
+                        Title = getTooltipText(currentDate)
+                    });
                 }
 
                 currentWeekStart = currentWeekStart.AddDays(7);
                 weekIndex++;
             }
 
-            // Oś Y - dni tygodnia (CategoryAxis)
-            var dayAxis = new CategoryAxis
-            {
-                Position = AxisPosition.Left,
-                Key = "DayAxis",
-                ItemsSource = new[] { "Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd" },
-                MajorStep = 1,
-                MinorStep = 1,
-                GapWidth = 0.0,
-                IsTickCentered = true,
-                FontSize = 12
-            };
-            model.Axes.Add(dayAxis);
-
-            // Oś X - tygodnie (bez etykiet dla roku, z etykietami dla miesiąca)
-            var weekAxis = new LinearAxis
-            {
-                Position = AxisPosition.Bottom,
-                Minimum = -0.5,
-                Maximum = weekIndex - 0.5,
-                MajorStep = periodDays >= YEAR_DAYS ? 10 : 1,
-                MinorStep = 1,
-                IsAxisVisible = periodDays < YEAR_DAYS, // Ukryj oś dla roku
-                AxislineStyle = LineStyle.None,
-                MajorGridlineStyle = LineStyle.None,
-                MinorGridlineStyle = LineStyle.None,
-                TickStyle = TickStyle.None
-            };
-            model.Axes.Add(weekAxis);
-
-            // Oś kolorów
-            model.Axes.Add(new LinearColorAxis
-            {
-                Position = AxisPosition.Right,
-                Palette = OxyPalette.Interpolate(100, OxyColors.LightGray, OxyColors.Green),
-                Minimum = 0,
-                Maximum = 100,
-                Title = "Intensywność (%)",
-                HighColor = OxyColors.Green,
-                LowColor = OxyColors.LightGray
-            });
-
-            // Heatmap seria z prawidłowymi zakresami
-            var heatMapSeries = new HeatMapSeries
-            {
-                X0 = -0.5,
-                X1 = weekIndex - 0.5,
-                Y0 = -0.5,
-                Y1 = 6.5,
-                Interpolate = false,
-                RenderMethod = HeatMapRenderMethod.Rectangles,
-                Data = new double[weekIndex, 7]
-            };
-
-            foreach (var data in heatmapData)
-            {
-                if (data.Week < weekIndex && data.Day < 7)
-                    heatMapSeries.Data[data.Week, data.Day] = data.Intensity;
-            }
-
-            model.Series.Add(heatMapSeries);
-
+            model.Series.Add(rectangleSeries);
             return model;
         }
-
         private PlotModel CreateStreakChart()
         {
-            var model = new PlotModel 
-            { 
-                Title = "Historia serii (streaki)",
-                TitleFontSize = 16,
-                Background = OxyColors.White
+            var model = new PlotModel
+            {
+                Title = "🏆 Twoje rekordy (Top 5 serii)",
+                TitleFontSize = 15,
+                TitleFontWeight = OxyPlot.FontWeights.Bold,
+                Background = OxyColors.White,
+                PlotAreaBorderThickness = new OxyThickness(0)
             };
 
-            var streaks = _statsEngine.GetAllStreaks(_habit);
+            var allStreaks = _statsEngine.GetAllStreaks(_habit);
 
-            if (streaks.Count == 0)
+            var topStreaks = allStreaks
+                .OrderByDescending(s => s.Length)
+                .Take(5)
+                .Reverse()
+                .ToList();
+
+            if (topStreaks.Count == 0)
             {
-                model.Subtitle = "Brak danych o seriach";
+                model.Subtitle = "Brak danych. Zbuduj swoją pierwszą serię!";
+                model.SubtitleColor = OxyColors.Gray;
                 return model;
             }
 
-            // Oś kategorii (serie)
             var categoryAxis = new CategoryAxis
             {
                 Position = AxisPosition.Left,
-                Title = "Serie"
+                TickStyle = TickStyle.None,
+                AxislineStyle = LineStyle.None,
+                GapWidth = 0.3,
             };
-
-            for (int i = 0; i < streaks.Count; i++)
-            {
-                categoryAxis.Labels.Add($"Seria {i + 1}\n{streaks[i].StartDate:dd.MM.yy}");
-            }
-
             model.Axes.Add(categoryAxis);
 
-            // Oś wartości (długość serii)
             var valueAxis = new LinearAxis
             {
                 Position = AxisPosition.Bottom,
-                Title = "Długość serii (dni)",
-                MinimumPadding = 0.1,
+                Minimum = 0,
+                MajorStep = 1,
+                MajorGridlineStyle = LineStyle.Dot,
+                MajorGridlineColor = OxyColor.FromRgb(224, 224, 224),
+                AxislineStyle = LineStyle.None,
                 MaximumPadding = 0.1
             };
             model.Axes.Add(valueAxis);
 
-            // Serie słupków poziomych
             var barSeries = new BarSeries
             {
-                FillColor = OxyColor.FromRgb(255, 152, 0),
-                StrokeThickness = 1,
-                StrokeColor = OxyColor.FromRgb(245, 124, 0)
+                // FillColor = OxyColor.Parse("#2ECC71),
+                StrokeThickness = 0,
+                LabelPlacement = LabelPlacement.Outside,
+                LabelFormatString = "{0} dni"
             };
 
-            for (int i = 0; i < streaks.Count; i++)
+            var greenColor = OxyColor.Parse("#2ECC71");
+
+            foreach (var streak in topStreaks)
             {
-                barSeries.Items.Add(new BarItem(streaks[i].Length, i));
+                barSeries.Items.Add(new BarItem { Value = streak.Length, Color = greenColor});
+                var endDate = streak.StartDate.AddDays(streak.Length - 1);
+
+                string dateLabel = $"{streak.StartDate:dd.MM} - {endDate:dd.MM}";
+
+                categoryAxis.Labels.Add(dateLabel);
             }
 
             model.Series.Add(barSeries);

@@ -7,42 +7,156 @@
         mc:Ignorable="d"
         Title="Statystyki nawyku" Height="700" Width="900"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResize">
+        ResizeMode="CanResize"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display">
     <Window.Resources>
-        <!-- Styl dla zakładek -->
-        <Style x:Key="TabItemStyle" TargetType="TabItem">
+        <SolidColorBrush x:Key="PrimaryGreen" Color="#2ECC71"/>  <SolidColorBrush x:Key="PrimaryGreenDark" Color="#27AE60"/> <SolidColorBrush x:Key="DarkText" Color="#2C3E50"/>      <SolidColorBrush x:Key="LightText" Color="#7F8C8D"/>     <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/> <Style x:Key="TabItemStyle" TargetType="TabItem">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="25,12"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Border" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="0,0,0,3" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter ContentSource="Header" 
+                                              HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryGreen}"/>
+                                <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{StaticResource LightText}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+<ControlTemplate x:Key="ModernTrackerTemplate">
+            <oxy:TrackerControl Position="{Binding Position}" LineExtents="{Binding LineExtents}"
+                                Background="Transparent" 
+                                BorderThickness="0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                ShowPointer="False"> <oxy:TrackerControl.Content>
+                    <Border Background="White" 
+                            BorderThickness="0" 
+                            CornerRadius="6" 
+                            Padding="10,6" 
+                            Margin="0,0,15,15"> <Border.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="8" ShadowDepth="3" Opacity="0.3"/>
+                        </Border.Effect>
+                        
+                        <TextBlock Text="{Binding}" 
+                                   Foreground="#CC2C3E50" 
+                                   FontSize="12" 
+                                   FontWeight="SemiBold"/>
+                    </Border>
+                </oxy:TrackerControl.Content>
+            </oxy:TrackerControl>
+        </ControlTemplate>
+
+        <Style x:Key="StatsSectionStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="CornerRadius" Value="12"/> <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="5,5,5,20"/>
+            <Setter Property="BorderThickness" Value="0"/> <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#2ECC71" Direction="270" ShadowDepth="3" Opacity="0.2" BlurRadius="15"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryGreen}"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="20,10"/>
-            <Setter Property="Background" Value="#F5F5F5"/>
-            <Setter Property="BorderBrush" Value="#CCCCCC"/>
-            <Setter Property="BorderThickness" Value="1,1,1,0"/>
-            <Setter Property="Margin" Value="2,0,0,0"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="White"/>
-                    <Setter Property="BorderBrush" Value="#2196F3"/>
-                    <Setter Property="BorderThickness" Value="1,3,1,0"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="20" 
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#2ECC71" Direction="270" ShadowDepth="2" Opacity="0.3" BlurRadius="10"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-
-        <!-- Styl dla sekcji statystyk -->
-        <Style x:Key="StatsSectionStyle" TargetType="Border">
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="5"/>
-            <Setter Property="Padding" Value="15"/>
-            <Setter Property="Margin" Value="0,0,0,15"/>
-            <Setter Property="Background" Value="White"/>
-        </Style>
-
-        <!-- Styl dla tytułów sekcji -->
-        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
+        <Style x:Key="GreenButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryGreen}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="20" 
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#2ECC71" Direction="270" ShadowDepth="2" Opacity="0.3" BlurRadius="10"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource PrimaryGreenDark}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -58,7 +172,7 @@
         <StackPanel Grid.Row="0" Margin="0,0,0,15">
             <TextBlock x:Name="HabitNameTextBlock" 
                        Text="Statystyki" FontSize="28" FontWeight="Bold" 
-                       HorizontalAlignment="Center" Foreground="#2196F3"/>
+                       HorizontalAlignment="Center" Foreground="#2C3E50"/>
             <TextBlock x:Name="HabitDescriptionTextBlock" 
                        Text="" FontSize="12" Foreground="Gray" 
                        TextWrapping="Wrap" Margin="0,5,0,0" 
@@ -116,27 +230,37 @@
             <TabItem Header="Miesiąc" Style="{StaticResource TabItemStyle}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10">
-                        <!-- Statystyki dla miesiąca -->
+                        
+                        <Border Background="White" CornerRadius="10" Padding="10" Margin="0,0,0,15">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="Wybierz okres:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"/>
+
+                                <ComboBox x:Name="MonthComboBox" Width="120" Margin="0,0,10,0" 
+                                          SelectionChanged="OnDateFilterChanged" VerticalContentAlignment="Center"/>
+
+                                <ComboBox x:Name="YearComboBox" Width="80" 
+                                          SelectionChanged="OnDateFilterChanged" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+                            
+                            <Border.Effect>
+                                <DropShadowEffect Color="#B0BEC5" Direction="270" ShadowDepth="3" Opacity="0.2" BlurRadius="15"/>
+                            </Border.Effect>
+                        </Border>
                         <Border Style="{StaticResource StatsSectionStyle}">
                             <StackPanel x:Name="MonthStatsPanel">
                                 <TextBlock Text="📈 Statystyki miesięczne" Style="{StaticResource SectionTitleStyle}"/>
-                                <!-- Statystyki będą dodawane dynamicznie -->
-                            </StackPanel>
+                                </StackPanel>
                         </Border>
 
-                        <!-- Wykresy dla miesiąca -->
                         <Border Style="{StaticResource StatsSectionStyle}">
                             <StackPanel>
                                 <TextBlock Text="📊 Wykresy" Style="{StaticResource SectionTitleStyle}"/>
-                                
-                                <!-- Wykres główny (liniowy dla Quantitative, kołowy dla Boolean) -->
+
                                 <oxy:PlotView x:Name="MonthMainChart" Height="300" Margin="0,0,0,15"/>
-                                
-                                <!-- Kalendarz aktywności -->
+
                                 <TextBlock Text="Kalendarz aktywności" FontWeight="SemiBold" Margin="0,10,0,5"/>
-                                <oxy:PlotView x:Name="MonthHeatmap" Height="280" Margin="0,0,0,15"/>
-                                
-                                <!-- Wykres serii -->
+                                <oxy:PlotView x:Name="MonthHeatmap" Height="280" Margin="0,0,0,15" DefaultTrackerTemplate="{StaticResource ModernTrackerTemplate}"/>
+
                                 <TextBlock Text="Serie (streaki)" FontWeight="SemiBold" Margin="0,10,0,5"/>
                                 <oxy:PlotView x:Name="MonthStreakChart" Height="200"/>
                             </StackPanel>
@@ -149,27 +273,35 @@
             <TabItem Header="Rok" Style="{StaticResource TabItemStyle}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10">
-                        <!-- Statystyki dla roku -->
+
+                        <Border Background="White" CornerRadius="10" Padding="10" Margin="0,0,0,15">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="Wybierz rok:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"/>
+
+                                <ComboBox x:Name="YearOnlyComboBox" Width="100" 
+                                          SelectionChanged="OnDateFilterChanged" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+                            
+                            <Border.Effect>
+                                <DropShadowEffect Color="#B0BEC5" Direction="270" ShadowDepth="3" Opacity="0.2" BlurRadius="15"/>
+                            </Border.Effect>
+                        </Border>
+
+
                         <Border Style="{StaticResource StatsSectionStyle}">
                             <StackPanel x:Name="YearStatsPanel">
                                 <TextBlock Text="📈 Statystyki roczne" Style="{StaticResource SectionTitleStyle}"/>
-                                <!-- Statystyki będą dodawane dynamicznie -->
                             </StackPanel>
                         </Border>
 
-                        <!-- Wykresy dla roku -->
                         <Border Style="{StaticResource StatsSectionStyle}">
                             <StackPanel>
                                 <TextBlock Text="📊 Wykresy" Style="{StaticResource SectionTitleStyle}"/>
-                                
-                                <!-- Wykres główny (liniowy dla Quantitative, kołowy dla Boolean) -->
                                 <oxy:PlotView x:Name="YearMainChart" Height="300" Margin="0,0,0,15"/>
                                 
-                                <!-- Kalendarz aktywności -->
                                 <TextBlock Text="Kalendarz aktywności (rok)" FontWeight="SemiBold" Margin="0,10,0,5"/>
-                                <oxy:PlotView x:Name="YearHeatmap" Height="280" Margin="0,0,0,15"/>
+                                <oxy:PlotView x:Name="YearHeatmap" Height="280" Margin="0,0,0,15" DefaultTrackerTemplate="{StaticResource ModernTrackerTemplate}"/>
                                 
-                                <!-- Wykres serii -->
                                 <TextBlock Text="Serie (streaki)" FontWeight="SemiBold" Margin="0,10,0,5"/>
                                 <oxy:PlotView x:Name="YearStreakChart" Height="200"/>
                             </StackPanel>
@@ -180,33 +312,12 @@
         </TabControl>
 
         <!-- Przycisk zamknięcia -->
-        <Button Grid.Row="3" Content="Zamknij" Width="120" Height="40" 
+        <Button Grid.Row="3" 
+                Content="Zamknij" 
+                Style="{StaticResource GreenButtonStyle}"
+                Width="120" Height="40" 
                 Click="CloseButton_Click" 
-                HorizontalAlignment="Center" Margin="0,15,0,0"
-                Background="#2196F3" Foreground="White"
-                FontSize="14" FontWeight="Bold" BorderThickness="0" 
-                Cursor="Hand">
-            <Button.Style>
-                <Style TargetType="Button">
-                    <Setter Property="Background" Value="#2196F3"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" 
-                                        CornerRadius="5" 
-                                        Padding="{TemplateBinding Padding}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#1976D2"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
+                HorizontalAlignment="Center" 
+                Margin="0,15,0,0"/>  
     </Grid>
 </Window>
