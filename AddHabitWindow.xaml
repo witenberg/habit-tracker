@@ -4,63 +4,238 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Dodaj nowy nawyk" Height="450" Width="500"
+        Title="Dodaj nowy nawyk"
+        Height="520"
+        Width="450"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize">
-    <Grid Margin="20">
+        ResizeMode="NoResize"
+        Background="#F9F9F9"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="PrimaryGreen"
+                Color="#2ECC71"/>
+        <SolidColorBrush x:Key="DarkGreen"
+                Color="#27AE60"/>
+        <SolidColorBrush x:Key="TextDark"
+                Color="#2C3E50"/>
+        <SolidColorBrush x:Key="BorderGray"
+                Color="#BDC3C7"/>
+
+        <Style TargetType="TextBlock"
+                x:Key="LabelStyle">
+            <Setter Property="Foreground"
+                    Value="{StaticResource TextDark}"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Margin"
+                    Value="0,0,0,6"/>
+            <Setter Property="FontSize"
+                    Value="14"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Height"
+                    Value="40"/>
+            <Setter Property="Padding"
+                    Value="10,0"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderGray}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Background"
+                    Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- typ nawyku -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Height"
+                    Value="40"/>
+            <Setter Property="Padding"
+                    Value="10,0"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderGray}"/>
+            <Setter Property="Background"
+                    Value="White"/>
+        </Style>
+
+        <!-- Przycisk zapisywania -->
+        <Style x:Key="SaveButtonStyle"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="{StaticResource PrimaryGreen}"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                    Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="{StaticResource DarkGreen}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Przycisk anulowania -->
+        <Style x:Key="CancelButtonStyle"
+                TargetType="Button">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="Foreground"
+                    Value="#7F8C8D"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="BorderBrush"
+                    Value="#BDC3C7"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                    Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="#ECF0F1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <!-- Nagłówek -->
+    <Grid Margin="25">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Nagłówek -->
-        <TextBlock Grid.Row="0" Text="Dodaj nowy nawyk" FontSize="20" FontWeight="Bold" 
-                   Margin="0,0,0,15" HorizontalAlignment="Center"/>
+        <StackPanel Grid.Row="0"
+                Margin="0,0,0,20">
+            <TextBlock Text="Nowy nawyk"
+                    FontSize="24"
+                    FontWeight="Bold"
+                       Foreground="{StaticResource TextDark}"
+                    HorizontalAlignment="Center"/>
+            <Separator Margin="50,10,50,0"
+                    Background="{StaticResource PrimaryGreen}"/>
+        </StackPanel>
 
-        <!-- ScrollViewer dla zawartości formularza -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
-                      HorizontalScrollBarVisibility="Disabled"
-                      Margin="0,0,0,15">
+        <ScrollViewer Grid.Row="1"
+                VerticalScrollBarVisibility="Auto"
+                Margin="0,0,0,20">
             <StackPanel>
-                <!-- Typ nawyku -->
-                <TextBlock Text="Typ nawyku:" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <ComboBox x:Name="HabitTypeComboBox" 
+                <!-- Formularz -->
+                <TextBlock Text="Typ nawyku"
+                        Style="{StaticResource LabelStyle}"/>
+                <ComboBox x:Name="HabitTypeComboBox"
                           SelectionChanged="HabitTypeComboBox_SelectionChanged"
-                          Margin="0,0,0,15">
-                    <ComboBoxItem Content="Tak/Nie" Tag="Boolean" IsSelected="True"/>
-                    <ComboBoxItem Content="Ilościowy" Tag="Quantitative"/>
+                          Margin="0,0,0,20">
+                    <ComboBoxItem Content="Tak / Nie"
+                            Tag="Boolean"
+                            IsSelected="True"/>
+                    <ComboBoxItem Content="Ilościowy"
+                            Tag="Quantitative"/>
                 </ComboBox>
 
-                <!-- Nazwa -->
-                <TextBlock Text="Nazwa nawyku:" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="NameTextBox" Margin="0,0,0,15" Height="30"/>
+                <TextBlock Text="Nazwa nawyku"
+                        Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="NameTextBox"
+                        Margin="0,0,0,20"/>
 
-                <!-- Opis -->
-                <TextBlock Text="Opis (opcjonalny):" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox x:Name="DescriptionTextBox" 
-                         TextWrapping="Wrap" AcceptsReturn="True" 
-                         Height="60" Margin="0,0,0,15"/>
+                <TextBlock Text="Opis (opcjonalny)"
+                        Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="DescriptionTextBox"
+                         TextWrapping="Wrap"
+                        AcceptsReturn="True"
+                         Height="80"
+                        Margin="0,0,0,20"
+                         VerticalContentAlignment="Top"
+                        Padding="10,10"/>
 
-                <!-- Panel dla QuantitativeHabit (ukryty domyślnie) -->
-                <StackPanel x:Name="QuantitativePanel" Visibility="Collapsed" Margin="0,0,0,15">
-                    <TextBlock Text="Wartość docelowa:" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="TargetValueTextBox" Height="30" Margin="0,0,0,10"/>
-                    <TextBlock Text="Jednostka:" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                    <TextBox x:Name="UnitTextBox" Height="30"/>
-                </StackPanel>
+                <Grid x:Name="QuantitativePanel"
+                        Visibility="Collapsed"
+                        Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Cel dzienny"
+                                Style="{StaticResource LabelStyle}"/>
+                        <TextBox x:Name="TargetValueTextBox"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Jednostka"
+                                Style="{StaticResource LabelStyle}"/>
+                        <TextBox x:Name="UnitTextBox"/>
+                    </StackPanel>
+                </Grid>
+
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Przyciski -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Anuluj" Width="100" Height="35" 
-                    Click="CancelButton_Click" 
-                    Margin="0,0,10,0" Cursor="Hand"/>
-            <Button Content="Zapisz" Width="100" Height="35" 
+        <StackPanel Grid.Row="2"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right">
+            <Button Content="Anuluj"
+                    Width="100"
+                    Height="40"
+                    Click="CancelButton_Click"
+                    Style="{StaticResource CancelButtonStyle}"
+                    Margin="0,0,10,0"/>
+
+            <Button Content="Zapisz"
+                    Width="120"
+                    Height="40"
                     Click="SaveButton_Click"
-                    Background="#4CAF50" Foreground="White"
-                    FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                    Style="{StaticResource SaveButtonStyle}"/>
         </StackPanel>
     </Grid>
 </Window>

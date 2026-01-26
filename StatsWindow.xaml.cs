@@ -109,7 +109,7 @@ namespace HabitTracker
             DateTime startDate = new DateTime(selectedYear, selectedMonth, 1);
             DateTime endDate = startDate.AddMonths(1).AddDays(-1);
 
-            // Wywołaj metody ładujące z KONKRETNYMI datami
+            // Wywołaj metody ładujące z konkretnymi datami
             LoadPeriodStats(startDate, endDate, MonthStatsPanel);
             LoadCharts(startDate, endDate, MonthMainChart, MonthHeatmap, MonthStreakChart, showHeatmap: true);
         }
