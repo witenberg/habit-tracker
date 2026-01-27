@@ -4,76 +4,268 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Habit Tracker - Logowanie" Height="600" Width="400"
+        Title="Habit Tracker - Witaj"
+        Height="600"
+        Width="420"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize">
-    <Grid Margin="30">
+        ResizeMode="NoResize"
+        Background="#F9F9F9"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="PrimaryGreen"
+                         Color="#2ECC71"/>
+        <SolidColorBrush x:Key="DarkGreen"
+                         Color="#27AE60"/>
+        <SolidColorBrush x:Key="TextDark"
+                         Color="#2C3E50"/>
+        <SolidColorBrush x:Key="TextGray"
+                         Color="#7F8C8D"/>
+        <SolidColorBrush x:Key="BorderGray"
+                         Color="#BDC3C7"/>
+
+        <Style TargetType="TextBlock"
+               x:Key="LabelStyle">
+            <Setter Property="Foreground"
+                    Value="{StaticResource TextDark}"/>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+            <Setter Property="Margin"
+                    Value="0,0,0,6"/>
+            <Setter Property="FontSize"
+                    Value="14"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Height"
+                    Value="45"/>
+            <Setter Property="Padding"
+                    Value="10,0"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderGray}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Background"
+                    Value="White"/>
+            <Setter Property="FontSize"
+                    Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Password box -->
+        <Style TargetType="PasswordBox">
+            <Setter Property="Height"
+                    Value="45"/>
+            <Setter Property="Padding"
+                    Value="10,0"/>
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+            <Setter Property="BorderBrush"
+                    Value="{StaticResource BorderGray}"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Background"
+                    Value="White"/>
+            <Setter Property="FontSize"
+                    Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Główny przycisk (styl) -->
+        <Style x:Key="PrimaryButtonStyle"
+               TargetType="Button">
+            <Setter Property="Background"
+                    Value="{StaticResource PrimaryGreen}"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+            <Setter Property="FontSize"
+                    Value="16"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="{StaticResource DarkGreen}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Hyperlink">
+            <Setter Property="Foreground"
+                    Value="{StaticResource PrimaryGreen}"/>
+            <Setter Property="TextDecorations"
+                    Value="None"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter Property="Foreground"
+                            Value="{StaticResource DarkGreen}"/>
+                    <Setter Property="TextDecorations"
+                            Value="Underline"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <!-- Nagłówek -->
+    <Grid Margin="40">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Nagłówek -->
-        <TextBlock Grid.Row="0" Text="Habit Tracker" FontSize="32" FontWeight="Bold" 
-                   HorizontalAlignment="Center" Margin="0,0,0,30"/>
-
-        <!-- Formularz logowania/rejestracji -->
-        <StackPanel Grid.Row="1" x:Name="LoginPanel">
-            <TextBlock Text="Nazwa użytkownika:" FontSize="14" Margin="0,0,0,5"/>
-            <TextBox x:Name="UsernameTextBox" FontSize="14" Padding="8" Margin="0,0,0,15"
-                     KeyDown="UsernameTextBox_KeyDown"/>
-            
-            <TextBlock Text="Hasło:" FontSize="14" Margin="0,0,0,5"/>
-            <PasswordBox x:Name="PasswordBox" FontSize="14" Padding="8" Margin="0,0,0,20"
-                        KeyDown="PasswordBox_KeyDown"/>
-            
-            <Button x:Name="LoginButton" Content="Zaloguj się" 
-                    Width="200" Height="40" FontSize="14" FontWeight="Bold"
-                    Background="#4CAF50" Foreground="White" BorderThickness="0"
-                    Cursor="Hand" Click="LoginButton_Click" Margin="0,0,0,10"/>
-            
-            <TextBlock HorizontalAlignment="Center" Foreground="Gray" FontSize="12">
-                <Run Text="Nie masz konta? "/>
-                <Hyperlink x:Name="RegisterLink" Click="RegisterLink_Click">
-                    <Run Text="Zarejestruj się"/>
-                </Hyperlink>
-            </TextBlock>
+        <StackPanel Grid.Row="0"
+                    Margin="0,0,0,40"
+                    HorizontalAlignment="Center">
+            <TextBlock Text="Habit Tracker"
+                       FontSize="32"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource TextDark}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+            <TextBlock Text="Zaloguj się, aby kontynuować"
+                       FontSize="16"
+                       Foreground="{StaticResource TextGray}"
+                       HorizontalAlignment="Center"/>
         </StackPanel>
 
-        <!-- Formularz rejestracji -->
-        <StackPanel Grid.Row="1" x:Name="RegisterPanel" Visibility="Collapsed">
-            <TextBlock Text="Nazwa użytkownika:" FontSize="14" Margin="0,0,0,5"/>
-            <TextBox x:Name="RegisterUsernameTextBox" FontSize="14" Padding="8" Margin="0,0,0,15"
-                     KeyDown="RegisterUsernameTextBox_KeyDown"/>
-            
-            <TextBlock Text="Hasło:" FontSize="14" Margin="0,0,0,5"/>
-            <PasswordBox x:Name="RegisterPasswordBox" FontSize="14" Padding="8" Margin="0,0,0,15"
-                        KeyDown="RegisterPasswordBox_KeyDown"/>
-            
-            <TextBlock Text="Potwierdź hasło:" FontSize="14" Margin="0,0,0,5"/>
-            <PasswordBox x:Name="ConfirmPasswordBox" FontSize="14" Padding="8" Margin="0,0,0,20"
-                        KeyDown="ConfirmPasswordBox_KeyDown"/>
-            
-            <Button x:Name="RegisterButton" Content="Zarejestruj się" 
-                    Width="200" Height="40" FontSize="14" FontWeight="Bold"
-                    Background="#2196F3" Foreground="White" BorderThickness="0"
-                    Cursor="Hand" Click="RegisterButton_Click" Margin="0,0,0,10"/>
-            
-            <TextBlock HorizontalAlignment="Center" Foreground="Gray" FontSize="12">
-                <Run Text="Masz już konto? "/>
-                <Hyperlink x:Name="LoginLink" Click="LoginLink_Click">
-                    <Run Text="Zaloguj się"/>
-                </Hyperlink>
-            </TextBlock>
-        </StackPanel>
+        <!-- Panel logowania -->
+        <Grid Grid.Row="1"
+              VerticalAlignment="Top">
 
-        <!-- Komunikat o błędzie -->
-        <TextBlock Grid.Row="2" x:Name="ErrorMessageTextBlock" 
-                   Foreground="Red" FontSize="12" 
-                   TextWrapping="Wrap" 
-                   HorizontalAlignment="Center"
-                   Margin="0,20,0,0"
-                   Visibility="Collapsed"/>
+            <StackPanel x:Name="LoginPanel">
+
+                <TextBlock Text="Nazwa użytkownika"
+                           Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="UsernameTextBox"
+                         Margin="0,0,0,20"
+                         KeyDown="UsernameTextBox_KeyDown"/>
+
+                <TextBlock Text="Hasło"
+                           Style="{StaticResource LabelStyle}"/>
+                <PasswordBox x:Name="PasswordBox"
+                             Margin="0,0,0,30"
+                             KeyDown="PasswordBox_KeyDown"/>
+
+                <Button x:Name="LoginButton"
+                        Content="Zaloguj się"
+                        Height="50"
+                        Click="LoginButton_Click"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Margin="0,0,0,20"/>
+
+                <TextBlock HorizontalAlignment="Center"
+                           FontSize="14"
+                           Foreground="{StaticResource TextGray}">
+                    Nie masz jeszcze konta? 
+                    <Hyperlink x:Name="RegisterLink"
+                               Click="RegisterLink_Click"
+                               FontWeight="SemiBold">
+                        Zarejestruj się
+                    </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+
+            <!-- Panel rejestracji -->
+            <StackPanel x:Name="RegisterPanel"
+                        Visibility="Collapsed">
+
+                <TextBlock Text="Wybierz nazwę użytkownika"
+                           Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="RegisterUsernameTextBox"
+                         Margin="0,0,0,15"
+                         KeyDown="RegisterUsernameTextBox_KeyDown"/>
+
+                <TextBlock Text="Hasło"
+                           Style="{StaticResource LabelStyle}"/>
+                <PasswordBox x:Name="RegisterPasswordBox"
+                             Margin="0,0,0,15"
+                             KeyDown="RegisterPasswordBox_KeyDown"/>
+
+                <TextBlock Text="Potwierdź hasło"
+                           Style="{StaticResource LabelStyle}"/>
+                <PasswordBox x:Name="ConfirmPasswordBox"
+                             Margin="0,0,0,30"
+                             KeyDown="ConfirmPasswordBox_KeyDown"/>
+
+                <Button x:Name="RegisterButton"
+                        Content="Utwórz konto"
+                        Height="50"
+                        Click="RegisterButton_Click"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Margin="0,0,0,20"/>
+
+                <TextBlock HorizontalAlignment="Center"
+                           FontSize="14"
+                           Foreground="{StaticResource TextGray}">
+                    Masz już konto? 
+                    <Hyperlink x:Name="LoginLink"
+                               Click="LoginLink_Click"
+                               FontWeight="SemiBold">
+                        Zaloguj się
+                    </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="2"
+                Background="#FFEBEE"
+                CornerRadius="5"
+                Padding="10"
+                Margin="0,20,0,0"
+                x:Name="ErrorBorder"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <TextBlock Text="⚠️"
+                           Margin="0,0,10,0"
+                           VerticalAlignment="Center"/>
+                <TextBlock x:Name="ErrorMessageTextBlock"
+                           Foreground="#C0392B"
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
     </Grid>
 </Window>
