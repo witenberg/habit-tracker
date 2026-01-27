@@ -73,6 +73,44 @@ namespace HabitTracker
             }
         }
 
+        private void DeleteHabitButton_Click(object sender, RoutedEventArgs e)
+{
+    // Pobierz przycisk i nawyk z Tagu
+    if (sender is Button button && button.Tag is Habit habitToDelete)
+    {
+        // Zapytaj o potwierdzenie
+        var result = MessageBox.Show(
+            $"Czy na pewno chcesz usunąć nawyk '{habitToDelete.Name}'?\nTego procesu nie można cofnąć.",
+            "Usuwanie nawyku",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            try
+            {
+                // Wywołaj metodę usuwania z HabitManager
+                bool isDeleted = App.HabitManager.DeleteHabit(habitToDelete.Id);
+
+                if (isDeleted)
+                {
+                    // Odśwież listę
+                    LoadDailyHabits(); 
+                    MessageBox.Show("Pomyślnie usunięto nawyk.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Nie udało się usunąć nawyku.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Wystąpił błąd: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+}
+
         private void UpdateCurrentUserDisplay()
         {
             var currentUser = _habitManager.GetCurrentUser();

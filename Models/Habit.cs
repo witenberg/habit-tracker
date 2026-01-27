@@ -76,5 +76,7 @@ namespace HabitTracker.Models
 
             return streak;
         }
+        // To jest "wrapper", który pozwala XAML-owi widzieć wynik metody
+        public int CurrentStreak => GetStreak();
     }
 }
